@@ -49,6 +49,7 @@ namespace common
         void transform(ReferenceFrame new_frame, const Eigen::Matrix4d &transform); // 变换坐标系
         void set_reference_frame(ReferenceFrame frame);                             // 设置参考坐标系
         ReferenceFrame get_reference_frame() const;                                 // 获取参考坐标系
+        void display() const;                                                       // 可视化
 
     private:
         ReferenceFrame _reference_frame = ReferenceFrame::UNDEFINED; // 参考坐标系

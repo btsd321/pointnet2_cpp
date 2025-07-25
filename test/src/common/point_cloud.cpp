@@ -1,5 +1,6 @@
 // 基于std::vector的点云类
 
+#include <pcl/visualization/pcl_visualizer.h>
 #include "common/point_cloud.h"
 
 namespace common
@@ -123,6 +124,28 @@ namespace common
     PointCloud::ReferenceFrame PointCloud::get_reference_frame() const
     {
         return this->_reference_frame;
+    }
+
+    // 可视化
+    void PointCloud::display() const
+    {
+        auto pcl_cloud = this->to_pclcloud().makeShared();
+        pcl::visualization::PCLVisualizer::Ptr viewer(new pcl::visualization::PCLVisualizer("3D Viewer"));
+        // 设置背景颜色为灰色
+        viewer->setBackgroundColor(100, 100, 100);
+        // 参数表示坐标轴的长度，单位：mm,红色为x轴,绿色为y轴,蓝色为z轴
+        viewer->addCoordinateSystem(100, "global");
+        // 创建一个自定义颜色处理器，将点云颜色设置为红色
+        pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> colorHandler1(pcl_cloud, 255, 0, 0); // 红
+        // 添加带颜色的点云到viewer中，命名为"colored cloud"
+        viewer.addPointCloud<pcl::PointXYZ>(VIEW_CLOUD1, colorHandler1, "point_cloud");
+        // 设置点云的大小，单位：mm
+        viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "point_cloud");
+        // 循环显示
+        while (!viewer->wasStopped())
+        {
+            viewer->spinOnce(100);
+        }
     }
 
 }

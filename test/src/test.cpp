@@ -100,10 +100,12 @@ namespace test
 
 int main(int argc, char *argv[])
 {
-    common::InferenceInput input;
+    common::InferenceInput inference_input;
+    common::ModelInput model_input;
     try
     {
-        test::input_pack(argc, argv, input);
+        test::input_pack(argc, argv, inference_input);
+        common::preprocess(inference_input, model_input);
     }
     catch (const std::exception &e)
     {

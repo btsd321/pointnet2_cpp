@@ -26,6 +26,10 @@ namespace common
             auto valid_mask = (mask_img == 255);
             // 计算点云
             auto point_cloud = depth_img.create_point_cloud(camera_info, valid_mask);
+            point_cloud.display(); // 可视化点云
+            model_input.points = point_cloud.to_torchcloud();
+            model_input.use_cuda = inference_input.use_cuda;
+            model_input.save_result = inference_input.save_result;
         }
         catch (const std::exception &e)
         {

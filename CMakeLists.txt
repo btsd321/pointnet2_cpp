@@ -13,9 +13,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # 如果有vcpkg，使用vcpkg工具链
 if(DEFINED ENV{VCPKG_ROOT})
     set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
+    include($ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
+    message(STATUS "Vcpkg ROOT: $ENV{VCPKG_ROOT}")
     message(STATUS "Using vcpkg toolchain from VCPKG_ROOT")
 elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
     set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
+    include("${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
     message(STATUS "Using local vcpkg toolchain")
 endif()
 
@@ -39,6 +42,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # 查找依赖包
+message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
+message(STATUS "Start finding dependencies...")
 find_package(Eigen3 REQUIRED)
 find_package(PCL CONFIG REQUIRED)
 find_package(Torch REQUIRED)
