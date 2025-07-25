@@ -4,6 +4,9 @@
 
 #include <torch/torch.h>
 
+#include "common/camera_info.h"
+#include "common/depth_img.h"
+
 namespace common
 {
     typedef struct InferenceInputStruct
