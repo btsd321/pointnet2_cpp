@@ -3,7 +3,8 @@ cmake_minimum_required(VERSION 3.16)
 project(pointnet2_cpp VERSION 1.0.0 LANGUAGES CXX)
 
 # CUDA编译选项
-option(WITH_CUDA "是否编译CUDA支持" OFF)
+option(WITH_CUDA "是否编译CUDA支持" ON)
+option(WITH_TEST "是否编译测试程序" ON)
 
 # 设置C++标准
 set(CMAKE_CXX_STANDARD 17)
@@ -39,6 +40,14 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # 查找依赖包
 find_package(Eigen3 REQUIRED)
+find_package(PCL CONFIG REQUIRED)
+find_package(Torch REQUIRED)
+if(WITH_CUDA)
+    find_package(CUDA QUIET)
+endif()
+if(WITH_TEST)
+    find_package(OpenCV REQUIRED)
+endif()
 
 # 设置LibTorch路径
 set(LIBTORCH_ROOT "/home/lixinlong/Library/libtorch/install")
@@ -49,23 +58,13 @@ else()
     message(FATAL_ERROR "LibTorch not found at ${LIBTORCH_ROOT}. Please set LIBTORCH_ROOT to the correct path.")
 endif()
 
-
-# 可选依赖
-find_package(PCL CONFIG REQUIRED)
-find_package(Torch REQUIRED)
-if(WITH_CUDA)
-    find_package(CUDA QUIET)
-endif()
-
 # 设置编译标志
-
 message(STATUS "Found PCL: ${PCL_VERSION}")
 add_definitions(-DUSE_PCL)
 
 message(STATUS "Found LibTorch: ${Torch_VERSION}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 add_definitions(-DUSE_TORCH)
-
 
 if(WITH_CUDA AND CUDA_FOUND)
     message(STATUS "Found CUDA: ${CUDA_VERSION}")
@@ -74,17 +73,31 @@ if(WITH_CUDA AND CUDA_FOUND)
 elseif(WITH_CUDA)
     message(FATAL_ERROR "WITH_CUDA=ON 但未找到CUDA")
 endif()
+if(WITH_TEST)
+    message(STATUS "OpenCV found: ${OpenCV_VERSION}")
+    add_definitions(-DUSE_OPENCV)
+else()
+    message(STATUS "WITH_TEST=OFF，跳过OpenCV查找")
+endif()
 
 message(STATUS "LibTorch found: ${Torch_VERSION}")
 message(STATUS "PCL found: ${PCL_VERSION}")
-message(STATUS "CUDA found: ${CUDA_VERSION}")
+if(WITH_CUDA AND CUDA_FOUND)
+    message(STATUS "CUDA found: ${CUDA_VERSION}")
+endif()
+if(WITH_TEST)
+    message(STATUS "OpenCV found: ${OpenCV_VERSION}")
+else()
+    message(STATUS "WITH_TEST=OFF，跳过OpenCV查找")
+endif()
 
+if(WITH_TEST)
 # argparse是header-only库，直接包含vcpkg安装的路径
 if(EXISTS "~/SoftWare/vcpkg/installed/x64-linux/include/argparse")
     set(ARGPARSE_INCLUDE_DIR "~/SoftWare/vcpkg/installed/x64-linux/include")
     message(STATUS "Found argparse in vcpkg")
 endif()
-
+endif()
 
 # 收集pointnet2相关源文件
 if(WITH_CUDA AND CUDA_FOUND)
@@ -134,6 +147,18 @@ target_include_directories(pointnet2 PUBLIC
     ${PCL_INCLUDE_DIRS}
 )
 
+# 安装规则
+install(TARGETS pointnet2
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+)
+
+install(FILES ${PROJECT_HEADERS}
+    DESTINATION include
+)
+
+if(WITH_TEST)
 # 创建测试可执行文件
 add_executable(pointnet2_test 
     "${PROJECT_SOURCES}"
@@ -146,28 +171,17 @@ target_include_directories(pointnet2_test PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/test/include
     ${EIGEN3_INCLUDE_DIR}
     ${PCL_INCLUDE_DIRS}
+    ${ARGPARSE_INCLUDE_DIR}
 )
 
-# 安装规则
-install(TARGETS pointnet2
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION bin
+install(TARGETS pointnet2_test
+    DESTINATION bin
 )
-
-install(FILES ${PROJECT_HEADERS}
-    DESTINATION include
-)
-
-# install(TARGETS pointnet2_test
-#     DESTINATION bin
-# )
 
 # 添加测试
 enable_testing()
+endif()
 
-# 添加权重加载测试用例  
-# add_test(NAME test_weight_loading COMMAND test_weight_loading)
 
 # 打印配置信息
 message(STATUS "")
@@ -178,8 +192,20 @@ message(STATUS "Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "Eigen3 Version: ${Eigen3_VERSION}")
 message(STATUS "LibTorch Version: ${Torch_VERSION}")
 message(STATUS "PCL Version: ${PCL_VERSION}")
-message(STATUS "Argparse Include: ${ARGPARSE_INCLUDE_DIR}")
-message(STATUS "CUDA Version: ${CUDA_VERSION}")
+if(WITH_CUDA AND CUDA_FOUND)
+    message(STATUS "CUDA Enabled: Yes")
+    message(STATUS "CUDA Version: ${CUDA_VERSION}")
+    message(STATUS "Argparse Include: ${ARGPARSE_INCLUDE_DIR}")
+else()
+    message(STATUS "CUDA Enabled: No")
+endif()
+if(WITH_TEST)
+    message(STATUS "WITH_TEST: Yes")
+    message(STATUS "OpenCV Version: ${OpenCV_VERSION}")
+else()
+    message(STATUS "WITH_TEST: No")
+    message(STATUS "OpenCV Enabled: No")
+endif()
 message(STATUS "Install Prefix: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "========================================================================")
 message(STATUS "")
