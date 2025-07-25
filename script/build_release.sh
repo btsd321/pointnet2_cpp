@@ -6,7 +6,9 @@ WORKSPACE_DIR="$(dirname $(dirname "$0"))"
 BUILD_DIR="$WORKSPACE_DIR/build"
 
 export VCPKG_ROOT="$HOME/SoftWare/vcpkg"
-export TORCH_ROOT=/home/lixinlong/Library/libtorch/install
+export Torch_DIR=/home/lixinlong/Library/libtorch/install/share/cmake
+
+rm -rf "$BUILD_DIR"
 
 # 打印调试信息
 echo "[DEBUG] WORKSPACE_DIR: $WORKSPACE_DIR"
