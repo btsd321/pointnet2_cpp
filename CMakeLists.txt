@@ -47,6 +47,8 @@ if(WITH_CUDA)
 endif()
 if(WITH_TEST)
     find_package(OpenCV REQUIRED)
+    find_package(yaml-cpp CONFIG REQUIRED)
+    find_package(RapidJSON CONFIG REQUIRED)
 endif()
 
 # 设置LibTorch路径
@@ -116,7 +118,10 @@ endif()
 # 收集pointnet2相关头文件
 file(GLOB POINTNET2_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/include/pointnet2/*.h")
 # 收集测试源文件
-file(GLOB TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test/src/*.cpp")
+file(GLOB TEST_SOURCES 
+    "${CMAKE_CURRENT_SOURCE_DIR}/test/src/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/test/src/common/*.cpp"
+)
 
 # 收集
 set(PROJECT_SOURCES
@@ -165,14 +170,30 @@ add_executable(pointnet2_test
     "${TEST_SOURCES}"
 )
 
-# 设置库的包含目录
+# 设置测试项目的包含目录
 target_include_directories(pointnet2_test PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/include
     ${CMAKE_CURRENT_SOURCE_DIR}/test/include
     ${EIGEN3_INCLUDE_DIR}
     ${PCL_INCLUDE_DIRS}
     ${ARGPARSE_INCLUDE_DIR}
+    $<TARGET_PROPERTY:yaml-cpp,INTERFACE_INCLUDE_DIRECTORIES>
+    $<TARGET_PROPERTY:RapidJSON::RapidJSON,INTERFACE_INCLUDE_DIRECTORIES>
 )
+
+# 链接库
+target_link_libraries(pointnet2_test 
+    ${PCL_LIBRARIES}
+    ${TORCH_LIBRARIES}
+    ${OpenCV_LIBS}
+    yaml-cpp 
+    RapidJSON::RapidJSON
+)
+
+if(WITH_CUDA AND CUDA_FOUND)
+    target_link_libraries(pointnet2_test ${CUDA_LIBRARIES})
+endif()
 
 install(TARGETS pointnet2_test
     DESTINATION bin
@@ -180,6 +201,7 @@ install(TARGETS pointnet2_test
 
 # 添加测试
 enable_testing()
+ 
 endif()
 
 
@@ -201,6 +223,8 @@ else()
 endif()
 if(WITH_TEST)
     message(STATUS "WITH_TEST: Yes")
+    message(STATUS "yaml-cpp Version: ${yaml-cpp_VERSION}")
+    message(STATUS "RapidJSON Version: ${RapidJSON_VERSION}")
     message(STATUS "OpenCV Version: ${OpenCV_VERSION}")
 else()
     message(STATUS "WITH_TEST: No")
