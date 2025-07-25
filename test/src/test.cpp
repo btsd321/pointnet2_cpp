@@ -48,15 +48,24 @@ namespace test
             throw err;
         }
 
-        input.checkpoint_path = args.get<std::filesystem::path>("checkpoint_path");
-        input.rgb_img_path = args.get<std::filesystem::path>("rgb_img_path");
-        input.depth_img_path = args.get<std::filesystem::path>("depth_img_path");
-        input.mask_img_path = args.get<std::filesystem::path>("mask_img_path");
-        input.camera_info_path = args.get<std::filesystem::path>("camera_info_path");
-        input.params_path = args.get<std::filesystem::path>("params_path");
-        input.use_cuda = args.is_used("use_cuda") ? true : false;
-        input.save_result = args.is_used("save_result") ? true : false;
-        input.output_dir = args.get<std::filesystem::path>("output_dir");
+        try
+        {
+            input.checkpoint_path = std::filesystem::path(args.get<std::string>("checkpoint_path"));
+            input.rgb_img_path = std::filesystem::path(args.get<std::string>("rgb_img_path"));
+            input.depth_img_path = std::filesystem::path(args.get<std::string>("depth_img_path"));
+            input.mask_img_path = std::filesystem::path(args.get<std::string>("mask_img_path"));
+            input.camera_info_path = std::filesystem::path(args.get<std::string>("camera_info_path"));
+            input.params_path = std::filesystem::path(args.get<std::string>("params_path"));
+            input.use_cuda = args.is_used("use_cuda");
+            input.save_result = args.is_used("save_result");
+            input.output_dir = std::filesystem::path(args.get<std::string>("output_dir"));
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
+            throw std::runtime_error("Failed to parse input arguments");
+            return;
+        }
 
         // 判断所有输入文件是否存在，不存在则报错
         if (!std::filesystem::exists(input.checkpoint_path))

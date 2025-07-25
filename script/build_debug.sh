@@ -7,8 +7,10 @@ BUILD_DIR="$WORKSPACE_DIR/build"
 
 export VCPKG_ROOT="$HOME/SoftWare/vcpkg"
 export Torch_DIR=/home/lixinlong/Library/libtorch/install/share/cmake
+export CUDA_HOME=/usr/local/cuda-11.8
+export CUDACXX="$CUDA_HOME/bin/nvcc"
 
-# rm -rf "$BUILD_DIR"
+rm -rf "$BUILD_DIR"
 
 # 打印调试信息
 echo "[DEBUG] WORKSPACE_DIR: $WORKSPACE_DIR"
