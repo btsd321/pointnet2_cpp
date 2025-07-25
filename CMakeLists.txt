@@ -45,7 +45,10 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 message(STATUS "Start finding dependencies...")
 find_package(Eigen3 REQUIRED)
-find_package(PCL CONFIG REQUIRED)
+find_package(Python3 COMPONENTS Development REQUIRED)
+find_package(VTK REQUIRED)
+find_package(PCL CONFIG REQUIRED COMPONENTS common io kdtree search visualization features)
+find_package(OpenMP REQUIRED)
 find_package(Torch REQUIRED)
 if(WITH_CUDA)
     find_package(CUDA QUIET)
@@ -67,11 +70,13 @@ endif()
 
 # 设置编译标志
 message(STATUS "Found PCL: ${PCL_VERSION}")
-add_definitions(-DUSE_PCL)
-
+message(STATUS "Found Eigen3: ${Eigen3_VERSION}")
+message(STATUS "Found Python3: ${Python3_VERSION}")
+message(STATUS "Found VTK: ${VTK_VERSION}")
+message(STATUS "Found OpenMP: ${OpenMP_FOUND}")
 message(STATUS "Found LibTorch: ${Torch_VERSION}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
-add_definitions(-DUSE_TORCH)
+
 
 if(WITH_CUDA AND CUDA_FOUND)
     message(STATUS "Found CUDA: ${CUDA_VERSION}")
@@ -82,7 +87,6 @@ elseif(WITH_CUDA)
 endif()
 if(WITH_TEST)
     message(STATUS "OpenCV found: ${OpenCV_VERSION}")
-    add_definitions(-DUSE_OPENCV)
 else()
     message(STATUS "WITH_TEST=OFF，跳过OpenCV查找")
 endif()
@@ -137,36 +141,42 @@ set(PROJECT_HEADERS
     "${POINTNET2_HEADERS}"
 )
 
-# 创建静态库
-add_library(pointnet2 STATIC ${PROJECT_SOURCES})
+# # 创建静态库
+# add_library(pointnet2 STATIC ${PROJECT_SOURCES})
 
-# 基础链接库
-target_link_libraries(pointnet2 Eigen3::Eigen)
+# # 基础链接库
+# target_link_libraries(pointnet2 Eigen3::Eigen)
 
-# 链接必需库
-target_link_libraries(pointnet2 ${PCL_LIBRARIES})
-target_link_libraries(pointnet2 ${TORCH_LIBRARIES})
-if(WITH_CUDA AND CUDA_FOUND)
-    target_link_libraries(pointnet2 ${CUDA_LIBRARIES})
-endif()
+# # 链接必需库
+# target_link_libraries(pointnet2 ${PCL_LIBRARIES})
+# target_link_libraries(pointnet2 ${TORCH_LIBRARIES})
+# target_link_libraries(pointnet2 ${Python3_LIBRARIES})
+# target_link_libraries(pointnet2 ${VTK_LIBRARIES})
+# target_link_libraries(pointnet2 ${OpenMP_CXX_LIBRARIES})
+# if(WITH_CUDA AND CUDA_FOUND)
+#     target_link_libraries(pointnet2 ${CUDA_LIBRARIES})
+# endif()
 
-# 设置库的包含目录
-target_include_directories(pointnet2 PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${EIGEN3_INCLUDE_DIR}
-    ${PCL_INCLUDE_DIRS}
-)
+# # 设置库的包含目录
+# target_include_directories(pointnet2 PUBLIC
+#     ${CMAKE_CURRENT_SOURCE_DIR}/include
+#     ${EIGEN3_INCLUDE_DIR}
+#     ${PCL_INCLUDE_DIRS}
+#     ${Python3_INCLUDE_DIRS}
+#     ${VTK_INCLUDE_DIRS}
+#     ${OpenMP_CXX_INCLUDE_DIRS}
+# )
 
-# 安装规则
-install(TARGETS pointnet2
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION bin
-)
+# # 安装规则
+# install(TARGETS pointnet2
+#     ARCHIVE DESTINATION lib
+#     LIBRARY DESTINATION lib
+#     RUNTIME DESTINATION bin
+# )
 
-install(FILES ${PROJECT_HEADERS}
-    DESTINATION include
-)
+# install(FILES ${PROJECT_HEADERS}
+#     DESTINATION include
+# )
 
 if(WITH_TEST)
 # 创建测试可执行文件
@@ -184,7 +194,11 @@ target_include_directories(pointnet2_test PUBLIC
     ${PCL_INCLUDE_DIRS}
     ${ARGPARSE_INCLUDE_DIR}
     $<TARGET_PROPERTY:yaml-cpp,INTERFACE_INCLUDE_DIRECTORIES>
-    $<TARGET_PROPERTY:RapidJSON::RapidJSON,INTERFACE_INCLUDE_DIRECTORIES>
+    ${RapidJSON_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIRS}
+    ${Python3_INCLUDE_DIRS}
+    ${VTK_INCLUDE_DIRS}
+    ${OpenMP_CXX_INCLUDE_DIRS}
 )
 
 # 链接库
@@ -193,7 +207,9 @@ target_link_libraries(pointnet2_test
     ${TORCH_LIBRARIES}
     ${OpenCV_LIBS}
     yaml-cpp 
-    RapidJSON::RapidJSON
+    ${Python3_LIBRARIES}
+    ${VTK_LIBRARIES}
+    ${OpenMP_CXX_LIBRARIES}
 )
 
 if(WITH_CUDA AND CUDA_FOUND)

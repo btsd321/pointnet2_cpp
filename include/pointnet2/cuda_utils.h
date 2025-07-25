@@ -15,6 +15,7 @@
 #include <cuda_runtime.h>
 
 #include <vector>
+#include <algorithm>
 
 // CUDA核函数的最大线程数
 #define TOTAL_THREADS 512
@@ -25,7 +26,7 @@ inline int opt_n_threads(int work_size)
 {
     const int pow_2 = std::log(static_cast<double>(work_size)) / std::log(2.0);
 
-    return max(min(1 << pow_2, TOTAL_THREADS), 1);
+    return std::max(std::min(1 << pow_2, TOTAL_THREADS), 1);
 }
 
 // 根据二维任务规模x和y, 自动选择最优的block配置(线程块大小)
@@ -33,7 +34,7 @@ inline int opt_n_threads(int work_size)
 inline dim3 opt_block_config(int x, int y)
 {
     const int x_threads = opt_n_threads(x);
-    const int y_threads = max(min(opt_n_threads(y), TOTAL_THREADS / x_threads), 1);
+    const int y_threads = std::max(std::min(opt_n_threads(y), TOTAL_THREADS / x_threads), 1);
     dim3 block_config(x_threads, y_threads, 1);
 
     return block_config;
@@ -52,4 +53,4 @@ inline dim3 opt_block_config(int x, int y)
         }                                                                              \
     } while (0)
 
-#endif  // USE_CUDA
+#endif // USE_CUDA

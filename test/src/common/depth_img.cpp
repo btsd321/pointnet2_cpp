@@ -4,11 +4,6 @@
 
 namespace common
 {
-    DepthImg::DepthImg(cv::Mat mat, DepthParams params, DepthImgScale scale)
-        : cv::Mat(mat), params(params), scale(scale)
-    {
-    }
-
     DepthImg DepthImg::from_png(std::string path, DepthParams params)
     {
         cv::Mat mat;
