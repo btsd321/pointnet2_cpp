@@ -5,6 +5,9 @@ set -e
 WORKSPACE_DIR="$(dirname $(dirname "$0"))"
 BUILD_DIR="$WORKSPACE_DIR/build"
 
+export VCPKG_ROOT="$HOME/SoftWare/vcpkg"
+export TORCH_ROOT=/home/lixinlong/Library/libtorch/install
+
 # 打印调试信息
 echo "[DEBUG] WORKSPACE_DIR: $WORKSPACE_DIR"
 echo "[DEBUG] BUILD_DIR: $BUILD_DIR"
