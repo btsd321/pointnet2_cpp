@@ -13,24 +13,12 @@ export CUDACXX="$CUDA_HOME/bin/nvcc"
 echo "[INFO] 当前脚本路径: $0"
 echo "[INFO] WORKSPACE_DIR: $WORKSPACE_DIR"
 echo "[INFO] BUILD_DIR: $BUILD_DIR"
-echo "[INFO] 清理build目录: $WORKSPACE_DIR"
-rm -rf "$BUILD_DIR"
 
 # 检查并创建构建目录
 if [ ! -d "$BUILD_DIR" ]; then
     echo "[INFO] 创建构建目录: $BUILD_DIR"
     mkdir -p "$BUILD_DIR"
 fi
-
-# 检查CMakeLists.txt是否存在
-if [ ! -f "$WORKSPACE_DIR/CMakeLists.txt" ]; then
-    echo "[ERROR] $WORKSPACE_DIR/CMakeLists.txt 未找到，终止编译。"
-    exit 1
-fi
-
-# 配置CMake
-echo "[INFO] 配置CMake..."
-cmake -S  "$WORKSPACE_DIR" -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX="$BUILD_DIR/install"
 
 # 编译（进入build目录后运行make）
 echo "[INFO] 开始编译..."

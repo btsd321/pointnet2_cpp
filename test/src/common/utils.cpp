@@ -21,9 +21,17 @@ namespace common
             auto mask_img = cv::imread(inference_input.mask_img_path.string(), cv::IMREAD_GRAYSCALE);
             auto depth_img = DepthImg::from_png(inference_input.depth_img_path.string(), depth_params, DepthImgScale::SCALE_NORMALIZED);
 
+            // 可视化 valid_mask， 调试用
+            cv::imshow("mask_img", mask_img);
+            cv::waitKey(0);
+
             // mask图中白色为物体其余为背景
             // 计算遮罩
-            auto valid_mask = (mask_img == 255);
+            cv::Mat valid_mask = cv::Mat::zeros(mask_img.size(), CV_8UC1);
+            valid_mask = (mask_img == 255); // 将白色区域设为255，其余区域为0
+            // 可视化 valid_mask， 调试用
+            cv::imshow("valid_mask", valid_mask);
+            cv::waitKey(0);
             // 计算点云
             auto point_cloud = depth_img.create_point_cloud(camera_info, valid_mask);
             point_cloud.display(); // 可视化点云

@@ -9,6 +9,7 @@ option(WITH_TEST "是否编译测试程序" ON)
 # 设置C++标准
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_DEBUG_POSTFIX "_d")
 
 # 如果有vcpkg，使用vcpkg工具链
 if(DEFINED ENV{VCPKG_ROOT})

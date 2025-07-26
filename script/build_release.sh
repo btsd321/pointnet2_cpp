@@ -3,7 +3,7 @@ set -e
 
 # 构建目录
 WORKSPACE_DIR="$(dirname $(dirname "$0"))"
-BUILD_DIR="$WORKSPACE_DIR/build"
+BUILD_DIR="$WORKSPACE_DIR/build/release"
 
 export VCPKG_ROOT="$HOME/SoftWare/vcpkg"
 export Torch_DIR=/home/lixinlong/Library/libtorch/install/share/cmake

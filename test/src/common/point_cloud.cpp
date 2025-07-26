@@ -33,7 +33,7 @@ namespace common
     PointCloud PointCloud::from_eigencloud(const EigenPointCloud &eigen_cloud)
     {
         PointCloud cloud;
-        for (int i = 0; i < eigen_cloud.rows(); ++i)
+        for (Eigen::Index i = 0; i < eigen_cloud.rows(); ++i)
         {
             cloud.points.emplace_back(Point::from_eigen_point(eigen_cloud.row(i)));
         }
@@ -53,7 +53,7 @@ namespace common
     torch::Tensor PointCloud::to_torchcloud() const
     {
         torch::Tensor tensor = torch::zeros({static_cast<int64_t>(this->points.size()), 6});
-        for (int i = 0; i < this->points.size(); ++i)
+        for (size_t i = 0; i < this->points.size(); ++i)
         {
             tensor[i] = this->points[i].to_torch_tensor();
         }
@@ -63,7 +63,7 @@ namespace common
     PointCloud::EigenPointCloud PointCloud::to_eigencloud() const
     {
         EigenPointCloud eigen_cloud(this->points.size(), 6);
-        for (int i = 0; i < this->points.size(); ++i)
+        for (size_t i = 0; i < this->points.size(); ++i)
         {
             eigen_cloud.row(i) = this->points[i].to_eigen_point();
         }

@@ -51,14 +51,37 @@ namespace test
         try
         {
             input.checkpoint_path = std::filesystem::path(args.get<std::string>("checkpoint_path"));
+            std::cout << "Checkpoint path: " << input.checkpoint_path.string() << std::endl;
             input.rgb_img_path = std::filesystem::path(args.get<std::string>("rgb_img_path"));
+            std::cout << "RGB image path: " << input.rgb_img_path.string() << std::endl;
             input.depth_img_path = std::filesystem::path(args.get<std::string>("depth_img_path"));
+            std::cout << "Depth image path: " << input.depth_img_path.string() << std::endl;
             input.mask_img_path = std::filesystem::path(args.get<std::string>("mask_img_path"));
+            std::cout << "Mask image path: " << input.mask_img_path.string() << std::endl;
             input.camera_info_path = std::filesystem::path(args.get<std::string>("camera_info_path"));
+            std::cout << "Camera info path: " << input.camera_info_path.string() << std::endl;
             input.params_path = std::filesystem::path(args.get<std::string>("params_path"));
+            std::cout << "Parameters path: " << input.params_path.string() << std::endl;
             input.use_cuda = args.is_used("use_cuda");
+            if (input.use_cuda)
+            {
+                std::cout << "CUDA ENABLED" << std::endl;
+            }
+            else
+            {
+                std::cout << "CUDA DISABLED" << std::endl;
+            }
             input.save_result = args.is_used("save_result");
+            if (input.save_result)
+            {
+                std::cout << "SAVE RESULT ENABLED" << std::endl;
+            }
+            else
+            {
+                std::cout << "SAVE RESULT DISABLED" << std::endl;
+            }
             input.output_dir = std::filesystem::path(args.get<std::string>("output_dir"));
+            std::cout << "Output directory: " << input.output_dir.string() << std::endl;
         }
         catch (const std::exception &e)
         {
