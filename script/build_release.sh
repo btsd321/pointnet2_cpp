@@ -5,17 +5,16 @@ set -e
 WORKSPACE_DIR="$(dirname $(dirname "$0"))"
 BUILD_DIR="$WORKSPACE_DIR/build/release"
 
-export VCPKG_ROOT="$HOME/SoftWare/vcpkg"
+export VCPKG_ROOT="$HOME/Library/vcpkg"
+export CUDA_HOME="/usr/local/cuda-11.8"
 export Torch_DIR=/home/lixinlong/Library/libtorch/share/cmake
-export CUDA_HOME=/usr/local/cuda-11.8
 export CUDACXX="$CUDA_HOME/bin/nvcc"
 
+echo "[INFO] 当前脚本路径: $0"
+echo "[INFO] WORKSPACE_DIR: $WORKSPACE_DIR"
+echo "[INFO] BUILD_DIR: $BUILD_DIR"
+echo "[INFO] 清理build目录: $WORKSPACE_DIR"
 rm -rf "$BUILD_DIR"
-
-# 打印调试信息
-echo "[DEBUG] WORKSPACE_DIR: $WORKSPACE_DIR"
-echo "[DEBUG] BUILD_DIR: $BUILD_DIR"
-echo "[DEBUG] 当前脚本路径: $0"
 
 # 检查并创建构建目录
 if [ ! -d "$BUILD_DIR" ]; then
@@ -31,7 +30,11 @@ fi
 
 # 配置CMake
 echo "[INFO] 配置CMake..."
-cmake -S  "$WORKSPACE_DIR" -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$BUILD_DIR/install"
+cmake -S  "$WORKSPACE_DIR" \
+    -B "$BUILD_DIR" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX="$BUILD_DIR/install"\
+    -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
 
 # 编译（进入build目录后运行make）
 echo "[INFO] 开始编译..."
