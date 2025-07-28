@@ -57,7 +57,7 @@ namespace common
         {
             tensor[i] = this->points[i].to_torch_tensor();
         }
-        return tensor;
+        return tensor.unsqueeze(0); // 增加 batch 维度，返回 [1, n, 6]的张量
     }
 
     PointCloud::EigenPointCloud PointCloud::to_eigencloud() const
@@ -123,6 +123,12 @@ namespace common
     PointCloud::ReferenceFrame PointCloud::get_reference_frame() const
     {
         return this->_reference_frame;
+    }
+
+    void PointCloud::clear()
+    {
+        this->points.clear();
+        this->_reference_frame = ReferenceFrame::UNDEFINED; // 重置参考坐标系
     }
 
     // 可视化

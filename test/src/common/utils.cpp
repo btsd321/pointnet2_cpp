@@ -27,14 +27,25 @@ namespace common
 
             // mask图中白色为物体其余为背景
             // 计算遮罩
-            cv::Mat valid_mask = cv::Mat::zeros(mask_img.size(), CV_8UC1);
-            valid_mask = (mask_img == 255); // 将白色区域设为255，其余区域为0
+            // cv::Mat valid_mask = cv::Mat::zeros(mask_img.size(), CV_8UC1);
+            // valid_mask = (mask_img == 255); // 将白色区域设为255，其余区域为0
             // 可视化 valid_mask， 调试用
-            cv::imshow("valid_mask", valid_mask);
-            cv::waitKey(0);
+            // cv::imshow("valid_mask", valid_mask);
+            // cv::waitKey(0);
             // 计算点云
-            auto point_cloud = depth_img.create_point_cloud(camera_info, valid_mask);
-            point_cloud.display(); // 可视化点云
+            PointCloud point_cloud;
+            try
+            {
+                point_cloud = depth_img.create_point_cloud(camera_info, mask_img);
+                point_cloud.display();
+            }
+            catch (const std::exception &e)
+            {
+                std::cerr << e.what() << '\n';
+            }
+
+            // 点云重采样，如果点数大于输入要求的点数就下采样反之上采样
+
             model_input.points = point_cloud.to_torchcloud();
             model_input.use_cuda = inference_input.use_cuda;
             model_input.save_result = inference_input.save_result;

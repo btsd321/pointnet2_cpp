@@ -34,6 +34,8 @@ namespace common
             params.clip_end = doc["clip_end"].GetDouble();
         if (doc.HasMember("max_val_in_depth"))
             params.max_val_in_depth = doc["max_val_in_depth"].GetDouble();
+        if (doc.HasMember("num_input_points"))
+            params.num_input_points = doc["num_input_points"].GetInt();
         return params;
     }
 }

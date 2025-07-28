@@ -1,5 +1,6 @@
 #include <pcl/features/normal_3d.h>
 #include <pcl/features/normal_3d_omp.h>
+#include <pcl/filters/statistical_outlier_removal.h>
 #include "common/depth_img.h"
 
 namespace common
@@ -114,21 +115,50 @@ namespace common
         cv::Mat mask_bin;
         if (mask.type() == CV_8UC1)
         {
-            mask_bin = mask;
+            // mask_bin = mask;
+            // 二值化， 分割阈值为150，大于150的是物体，反之是背景
+            cv::threshold(mask, mask_bin, 150, 255, cv::THRESH_BINARY);
         }
-        else if (mask.type() == CV_16UC1)
-        {
-            mask.convertTo(mask_bin, CV_8U, 1.0 / 256.0); // 简单归一化
-        }
+        // else if (mask.type() == CV_16UC1)
+        // {
+        //     mask.convertTo(mask_bin, CV_8U, 1.0 / 256.0); // 简单归一化
+        // }
         else
         {
             throw std::runtime_error("Unsupported mask type for point cloud generation");
         }
 
+        // 可视化mask_bin
+        cv::imshow("mask_bin", mask_bin);
+        cv::waitKey(0);
+        // 计算mask_bin中最大值和最小值
+        double max_val = cv::Mat(mask_bin).at<uint8_t>(0, 0);
+        double min_val = cv::Mat(mask_bin).at<uint8_t>(0, 0);
+        for (int i = 0; i < mask_bin.rows; ++i)
+        {
+            for (int j = 0; j < mask_bin.cols; ++j)
+            {
+                if (mask_bin.at<uint8_t>(i, j) > max_val)
+                {
+                    max_val = mask_bin.at<uint8_t>(i, j);
+                }
+                if (mask_bin.at<uint8_t>(i, j) < min_val)
+                {
+                    min_val = mask_bin.at<uint8_t>(i, j);
+                }
+            }
+        }
+        std::cout << "Mask min value: " << min_val << ", max value: " << max_val << std::endl;
+
         std::vector<cv::Point> nonzero_pts;
         cv::findNonZero(mask_bin, nonzero_pts);
+        if (nonzero_pts.size() <= 100)
+        {
+            throw std::runtime_error("Too few points in mask for point cloud generation");
+        }
         pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-
+        pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_pcl_cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+        pcl::PointCloud<pcl::PointXYZ>::Ptr resampled_pcl_cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
         for (const auto &pt : nonzero_pts)
         {
             int i = pt.y, j = pt.x;
@@ -140,15 +170,22 @@ namespace common
             output_cloud.points.emplace_back(point);
             pcl_cloud->points.emplace_back(pcl::PointXYZ(point.x, point.y, point.z));
         }
-        output_cloud.set_reference_frame(PointCloud::ReferenceFrame::CAMERA);
+
+        // 点云统计滤波，去除离群点
+        pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
+        sor.setInputCloud(pcl_cloud);
+        sor.setMeanK(40);            // 计算平均值，去除离群点
+        sor.setStddevMulThresh(1.0); // 计算标准差，去除离群点
+        sor.filter(*filtered_pcl_cloud);
 
         // 计算法向量并归一化
         pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> ne;
-        ne.setInputCloud(pcl_cloud);
+        ne.setInputCloud(filtered_pcl_cloud);
         pcl::search::KdTree<pcl::PointXYZ>::Ptr tree = std::make_shared<pcl::search::KdTree<pcl::PointXYZ>>();
         ne.setSearchMethod(tree);
         ne.setRadiusSearch(0.015); // 邻域半径，单位：m，和训练保持一致，不能随意更改
         pcl::PointCloud<pcl::Normal>::Ptr normals = std::make_shared<pcl::PointCloud<pcl::Normal>>();
+        pcl::PointCloud<pcl::Normal>::Ptr resampled_normals = std::make_shared<pcl::PointCloud<pcl::Normal>>();
         ne.compute(*normals);
         // 统一法向量方向：都指向负Z轴方向（向下）
         for (int i = 0; i < normals->points.size(); ++i)
@@ -162,14 +199,44 @@ namespace common
             }
 
             auto length = std::sqrt(n.normal_x * n.normal_x + n.normal_y * n.normal_y + n.normal_z * n.normal_z);
-            // n.normal_x /= length;
-            // n.normal_y /= length;
-            // n.normal_z /= length;
-            output_cloud.points.at(i).nx = n.normal_x / length;
-            output_cloud.points.at(i).ny = n.normal_y / length;
-            output_cloud.points.at(i).nz = n.normal_z / length;
+            n.normal_x /= length;
+            n.normal_y /= length;
+            n.normal_z /= length;
+            // output_cloud.points.at(i).nx = n.normal_x / length;
+            // output_cloud.points.at(i).ny = n.normal_y / length;
+            // output_cloud.points.at(i).nz = n.normal_z / length;
         }
 
+        // 点云重采样
+        if (filtered_pcl_cloud->size() <= 100)
+        {
+            throw std::runtime_error("Too few points after filtering for point cloud generation");
+        }
+        else if (filtered_pcl_cloud->size() < this->params.num_input_points)
+        {
+            // 需要上采样，直接重复点云
+            *resampled_pcl_cloud = *filtered_pcl_cloud;
+            *resampled_normals = *normals;
+            int num_repeat = this->params.num_input_points / filtered_pcl_cloud->size() - 1;
+            int num_extra = this->params.num_input_points % filtered_pcl_cloud->size();
+            while (num_repeat)
+            {
+                num_repeat--;
+                resampled_pcl_cloud->insert(resampled_pcl_cloud->end(), filtered_pcl_cloud->begin(), filtered_pcl_cloud->end());
+                resampled_normals->insert(resampled_normals->end(), normals->begin(), normals->end());
+            }
+            resampled_pcl_cloud->insert(resampled_pcl_cloud->end(), filtered_pcl_cloud->begin(), filtered_pcl_cloud->begin() + num_extra);
+            resampled_normals->insert(resampled_normals->end(), normals->begin(), normals->begin() + num_extra);
+        }
+        else if (filtered_pcl_cloud->size() == this->params.num_input_points)
+        {
+        }
+        else //(filtered_pcl_cloud->size() > this->params.num_input_points)
+        {
+            // 需要下采样 TODO
+        }
+
+        output_cloud.set_reference_frame(PointCloud::ReferenceFrame::CAMERA);
         return output_cloud;
     }
 } // namespace common

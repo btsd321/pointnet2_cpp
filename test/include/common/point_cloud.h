@@ -42,6 +42,8 @@ namespace common
         static PointCloud from_torchcloud(const torch::Tensor &tensor);        // 从torch tensor构造
         static PointCloud from_eigencloud(const EigenPointCloud &eigen_cloud); // 从Eigen点云构造
 
+        void clear(); // 清除所有点
+
         PclPointCloud to_pclcloud() const;     // 转换为pcl点云
         torch::Tensor to_torchcloud() const;   // 转换为torch tensor
         EigenPointCloud to_eigencloud() const; // 转换为Eigen点云
