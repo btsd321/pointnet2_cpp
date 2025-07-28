@@ -1,5 +1,18 @@
 
 cmake_minimum_required(VERSION 3.16)
+
+# 如果有vcpkg，使用vcpkg工具链
+if(DEFINED ENV{VCPKG_ROOT})
+    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
+    message(STATUS "Vcpkg ROOT: $ENV{VCPKG_ROOT}")
+    message(STATUS "Using vcpkg toolchain from VCPKG_ROOT")
+elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
+    set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
+    message(STATUS "Using local vcpkg toolchain")
+else()
+    message(FATAL_ERROR "No vcpkg found. Please set VCPKG_ROOT or put vcpkg.cmake in the project root directory.")
+endif()
+
 project(pointnet2_cpp VERSION 1.0.0 LANGUAGES CXX)
 
 # CUDA编译选项
@@ -11,17 +24,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_DEBUG_POSTFIX "_d")
 
-# 如果有vcpkg，使用vcpkg工具链
-if(DEFINED ENV{VCPKG_ROOT})
-    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
-    include($ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
-    message(STATUS "Vcpkg ROOT: $ENV{VCPKG_ROOT}")
-    message(STATUS "Using vcpkg toolchain from VCPKG_ROOT")
-elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
-    set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
-    include("${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake")
-    message(STATUS "Using local vcpkg toolchain")
-endif()
+
 
 # 设置编译选项
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -47,9 +50,10 @@ message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 message(STATUS "Start finding dependencies...")
 find_package(Eigen3 REQUIRED)
 find_package(Python3 COMPONENTS Development REQUIRED)
-find_package(VTK REQUIRED)
+# find_package(VTK REQUIRED)
 find_package(PCL CONFIG REQUIRED COMPONENTS common io kdtree search visualization features)
-find_package(OpenMP REQUIRED)
+# find_package(OpenMP REQUIRED)
+find_package(Protobuf CONFIG REQUIRED) # 不加这个会导致Torch需要的Protobuf和其他库的Protobuf冲突
 find_package(Torch REQUIRED)
 if(WITH_CUDA)
     find_package(CUDA QUIET)
@@ -61,7 +65,7 @@ if(WITH_TEST)
 endif()
 
 # 设置LibTorch路径
-set(LIBTORCH_ROOT "/home/lixinlong/Library/libtorch/install")
+set(LIBTORCH_ROOT "/home/lixinlong/Library/libtorch")
 if(EXISTS "${LIBTORCH_ROOT}/share/cmake/Torch")
     set(CMAKE_PREFIX_PATH "${LIBTORCH_ROOT};${CMAKE_PREFIX_PATH}")
     message(STATUS "Using LibTorch from: ${LIBTORCH_ROOT}")
@@ -73,8 +77,8 @@ endif()
 message(STATUS "Found PCL: ${PCL_VERSION}")
 message(STATUS "Found Eigen3: ${Eigen3_VERSION}")
 message(STATUS "Found Python3: ${Python3_VERSION}")
-message(STATUS "Found VTK: ${VTK_VERSION}")
-message(STATUS "Found OpenMP: ${OpenMP_FOUND}")
+# message(STATUS "Found VTK: ${VTK_VERSION}")
+# message(STATUS "Found OpenMP: ${OpenMP_FOUND}")
 message(STATUS "Found LibTorch: ${Torch_VERSION}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
@@ -198,8 +202,8 @@ target_include_directories(pointnet2_test PUBLIC
     ${RapidJSON_INCLUDE_DIRS}
     ${OpenCV_INCLUDE_DIRS}
     ${Python3_INCLUDE_DIRS}
-    ${VTK_INCLUDE_DIRS}
-    ${OpenMP_CXX_INCLUDE_DIRS}
+    # ${VTK_INCLUDE_DIRS}
+    # ${OpenMP_CXX_INCLUDE_DIRS}
 )
 
 # 链接库
@@ -209,8 +213,8 @@ target_link_libraries(pointnet2_test
     ${OpenCV_LIBS}
     yaml-cpp 
     ${Python3_LIBRARIES}
-    ${VTK_LIBRARIES}
-    ${OpenMP_CXX_LIBRARIES}
+    # ${VTK_LIBRARIES}
+    # ${OpenMP_CXX_LIBRARIES}
 )
 
 if(WITH_CUDA AND CUDA_FOUND)

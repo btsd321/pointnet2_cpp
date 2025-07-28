@@ -6,7 +6,7 @@ WORKSPACE_DIR="$(dirname $(dirname "$0"))"
 BUILD_DIR="$WORKSPACE_DIR/build/release"
 
 export VCPKG_ROOT="$HOME/SoftWare/vcpkg"
-export Torch_DIR=/home/lixinlong/Library/libtorch/install/share/cmake
+export Torch_DIR=/home/lixinlong/Library/libtorch/share/cmake
 export CUDA_HOME=/usr/local/cuda-11.8
 export CUDACXX="$CUDA_HOME/bin/nvcc"
 

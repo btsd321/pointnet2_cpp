@@ -5,9 +5,11 @@ set -e
 WORKSPACE_DIR="$(dirname $(dirname "$0"))"
 BUILD_DIR="$WORKSPACE_DIR/build/debug"
 
-export VCPKG_ROOT="$HOME/SoftWare/vcpkg"
-export Torch_DIR=/home/lixinlong/Library/libtorch/install/share/cmake
-export CUDA_HOME=/usr/local/cuda-11.8
+export VCPKG_ROOT="$WORKSPACE_DIR/vcpkg"
+# export Python3_ROOT_DIR="$HOME/SoftWare/miniconda3"
+# export Python3_EXECUTABLE="$Python3_ROOT_DIR/bin/python3"
+export CUDA_HOME="/usr/local/cuda-11.8"
+export Torch_DIR=/home/lixinlong/Library/libtorch/share/cmake
 export CUDACXX="$CUDA_HOME/bin/nvcc"
 
 echo "[INFO] 当前脚本路径: $0"
@@ -30,7 +32,11 @@ fi
 
 # 配置CMake
 echo "[INFO] 配置CMake..."
-cmake -S  "$WORKSPACE_DIR" -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX="$BUILD_DIR/install"
+cmake -S  "$WORKSPACE_DIR" \
+    -B "$BUILD_DIR" \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -DCMAKE_INSTALL_PREFIX="$BUILD_DIR/install"\
+    -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
 
 # 编译（进入build目录后运行make）
 echo "[INFO] 开始编译..."
