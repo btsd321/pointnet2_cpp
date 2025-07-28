@@ -50,9 +50,7 @@ message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 message(STATUS "Start finding dependencies...")
 find_package(Eigen3 REQUIRED)
 find_package(Python3 COMPONENTS Development REQUIRED)
-# find_package(VTK REQUIRED)
 find_package(PCL CONFIG REQUIRED COMPONENTS common io kdtree search visualization features)
-# find_package(OpenMP REQUIRED)
 find_package(Protobuf CONFIG REQUIRED) # 不加这个会导致Torch需要的Protobuf和其他库的Protobuf冲突
 find_package(Torch REQUIRED)
 if(WITH_CUDA)
@@ -77,8 +75,6 @@ endif()
 message(STATUS "Found PCL: ${PCL_VERSION}")
 message(STATUS "Found Eigen3: ${Eigen3_VERSION}")
 message(STATUS "Found Python3: ${Python3_VERSION}")
-# message(STATUS "Found VTK: ${VTK_VERSION}")
-# message(STATUS "Found OpenMP: ${OpenMP_FOUND}")
 message(STATUS "Found LibTorch: ${Torch_VERSION}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
@@ -168,8 +164,6 @@ set(PROJECT_HEADERS
 #     ${EIGEN3_INCLUDE_DIR}
 #     ${PCL_INCLUDE_DIRS}
 #     ${Python3_INCLUDE_DIRS}
-#     ${VTK_INCLUDE_DIRS}
-#     ${OpenMP_CXX_INCLUDE_DIRS}
 # )
 
 # # 安装规则
@@ -202,8 +196,6 @@ target_include_directories(pointnet2_test PUBLIC
     ${RapidJSON_INCLUDE_DIRS}
     ${OpenCV_INCLUDE_DIRS}
     ${Python3_INCLUDE_DIRS}
-    # ${VTK_INCLUDE_DIRS}
-    # ${OpenMP_CXX_INCLUDE_DIRS}
 )
 
 # 链接库
@@ -213,8 +205,6 @@ target_link_libraries(pointnet2_test
     ${OpenCV_LIBS}
     yaml-cpp 
     ${Python3_LIBRARIES}
-    # ${VTK_LIBRARIES}
-    # ${OpenMP_CXX_LIBRARIES}
 )
 
 if(WITH_CUDA AND CUDA_FOUND)
