@@ -44,4 +44,4 @@
 input
 output
 build
-vcpkg
+vcpkg_installed
