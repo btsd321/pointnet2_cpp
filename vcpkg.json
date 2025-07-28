@@ -1,0 +1,18 @@
+{
+    "name": "pointnet2-cpp",
+    "version-string": "1.0.0",
+    "dependencies": [
+        "opencv4",
+        {
+            "name": "pcl",
+            "features": [
+                "visualization"
+            ]
+        },
+        "yaml-cpp",
+        "rapidjson",
+        "argparse",
+        "protobuf",
+        "eigen3"
+    ]
+}

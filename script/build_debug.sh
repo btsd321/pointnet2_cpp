@@ -5,9 +5,7 @@ set -e
 WORKSPACE_DIR="$(dirname $(dirname "$0"))"
 BUILD_DIR="$WORKSPACE_DIR/build/debug"
 
-export VCPKG_ROOT="$WORKSPACE_DIR/vcpkg"
-# export Python3_ROOT_DIR="$HOME/SoftWare/miniconda3"
-# export Python3_EXECUTABLE="$Python3_ROOT_DIR/bin/python3"
+export VCPKG_ROOT="$HOME/Library/vcpkg"
 export CUDA_HOME="/usr/local/cuda-11.8"
 export Torch_DIR=/home/lixinlong/Library/libtorch/share/cmake
 export CUDACXX="$CUDA_HOME/bin/nvcc"
