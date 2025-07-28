@@ -133,18 +133,15 @@ namespace common
         // 设置背景颜色为灰色
         viewer->setBackgroundColor(100, 100, 100);
         // 参数表示坐标轴的长度，单位：mm,红色为x轴,绿色为y轴,蓝色为z轴
-        viewer->addCoordinateSystem(100, "global");
+        viewer->addCoordinateSystem(1, "global");
         // 创建一个自定义颜色处理器，将点云颜色设置为红色
         pcl::visualization::PointCloudColorHandlerCustom<pcl::PointNormal> colorHandler1(pcl_cloud, 255, 0, 0); // 红
         // 添加带颜色的点云到viewer中，命名为"colored cloud"
         viewer->addPointCloud<pcl::PointNormal>(pcl_cloud, colorHandler1, "point_cloud");
         // 设置点云的大小，单位：mm
-        viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "point_cloud");
+        viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 0.002, "point_cloud");
         // 循环显示
-        while (!viewer->wasStopped())
-        {
-            viewer->spinOnce(100);
-        }
+        viewer->spin();
     }
 
 }

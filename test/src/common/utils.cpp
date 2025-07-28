@@ -22,8 +22,8 @@ namespace common
             auto depth_img = DepthImg::from_png(inference_input.depth_img_path.string(), depth_params, DepthImgScale::SCALE_NORMALIZED);
 
             // 可视化 valid_mask， 调试用
-            cv::imshow("mask_img", mask_img);
-            cv::waitKey(0);
+            // cv::imshow("mask_img", mask_img);
+            // cv::waitKey(0);
 
             // mask图中白色为物体其余为背景
             // 计算遮罩
